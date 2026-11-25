@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin sign in · <%= site.site_name %></title>
+  <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+  <script src="/js/theme.js"></script>
+</head>
+<body class="login-page">
+  <div class="login-bg" aria-hidden="true"><span></span><span></span></div>
+  <main class="login-card">
+    <a class="sidebar-brand" href="/"><span class="brand-mark">A</span><span>Admin<small><%= site.site_name %></small></span></a>
+    <h1>Welcome back</h1>
+    <p class="muted">Sign in to manage your portfolio content.</p>
+
+    <% if (error) { %><div class="alert alert-error" role="alert"><%= error %></div><% } %>
+    <% if (flash) { %><div class="alert alert-<%= flash.type %>" role="status"><%= flash.message %></div><% } %>
+    <% if (!error && typeof notice !== 'undefined' && notice) { %><div class="alert alert-success" role="status"><%= notice %></div><% } %>
+
+    <form method="post" action="/admin/login" class="stack" data-login-form>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label class="field"><span>Email</span>
+        <input type="email" name="email" value="<%= email %>" required autocomplete="username" autofocus placeholder="admin@example.com">
+      </label>
+      <label class="field"><span>Password</span>
+        <span class="password-wrap">
+          <input type="password" name="password" required autocomplete="current-password" placeholder="••••••••" data-password>
+          <button type="button" class="pw-toggle" data-pw-toggle aria-label="Show password">Show</button>
+        </span>
+      </label>
+      <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+    </form>
+    <a class="back-link" href="/">← Back to website</a>
+  </main>
+  <script src="/js/admin.js" defer></script>
+</body>
+</html>

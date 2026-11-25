@@ -1,0 +1,22 @@
+<%- include('partials/top') %>
+<% const err = (k) => errors[k] ? `<span class="field-error">${errors[k]}</span>` : ''; %>
+<form class="card stack account-form" method="post" action="/admin/account" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <h2 class="card-title">Profile</h2>
+  <div class="grid-2">
+    <label class="field <%= errors.name ? 'has-error' : '' %>"><span>Name</span><input name="name" value="<%= user.name %>" required maxlength="100" autocomplete="name"><%- err('name') %></label>
+    <label class="field <%= errors.email ? 'has-error' : '' %>"><span>Login email</span><input name="email" type="email" value="<%= user.email %>" required autocomplete="username"><%- err('email') %></label>
+  </div>
+
+  <h2 class="card-title">Change password</h2>
+  <p class="muted small">Leave the new password fields empty to keep your current password.</p>
+  <div class="grid-2">
+    <label class="field <%= errors.new_password ? 'has-error' : '' %>"><span>New password</span><input name="new_password" type="password" autocomplete="new-password" minlength="8"><%- err('new_password') %></label>
+    <label class="field <%= errors.confirm_password ? 'has-error' : '' %>"><span>Confirm new password</span><input name="confirm_password" type="password" autocomplete="new-password"><%- err('confirm_password') %></label>
+  </div>
+
+  <hr>
+  <label class="field <%= errors.current_password ? 'has-error' : '' %>"><span>Current password <em>*</em></span><input name="current_password" type="password" required autocomplete="current-password"><small class="muted">Required to confirm any change.</small><%- err('current_password') %></label>
+  <div><button class="btn btn-primary" type="submit">Update account</button></div>
+</form>
+<%- include('partials/bottom') %>

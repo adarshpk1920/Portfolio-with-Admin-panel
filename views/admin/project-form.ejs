@@ -1,0 +1,148 @@
+<%- include('partials/top') %>
+<% const isNew = !project.id; const err = (k) => errors[k] ? `<span class="field-error">${errors[k]}</span>` : ''; %>
+
+<div class="toolbar">
+  <a class="link" href="/admin/projects">← All projects</a>
+  <% if (!isNew) { %>
+    <div class="row-actions">
+      <a class="btn btn-ghost btn-sm" href="/admin/projects/<%= project.id %>/preview" target="_blank" rel="noopener">Preview</a>
+      <% if (project.published) { %><a class="btn btn-ghost btn-sm" href="/projects/<%= project.slug %>" target="_blank" rel="noopener">View live ↗</a><% } %>
+    </div>
+  <% } %>
+</div>
+
+<% if (Object.keys(errors).filter(k => errors[k]).length) { %>
+  <div class="alert alert-error" role="alert">Please fix the highlighted fields below.<% if (errors._files) { %> <%= errors._files %><% } %></div>
+<% } %>
+
+<form class="editor" method="post" action="<%= isNew ? '/admin/projects' : `/admin/projects/${project.id}` %>" enctype="multipart/form-data" data-project-form novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <div class="editor-main">
+    <section class="card stack">
+      <h2 class="card-title">Project details</h2>
+      <label class="field <%= errors.title ? 'has-error' : '' %>"><span>Title <em>*</em></span>
+        <input name="title" value="<%= project.title %>" required maxlength="150" placeholder="e.g. Lumen Analytics Dashboard" data-title-input>
+        <%- err('title') %>
+      </label>
+      <label class="field"><span>URL slug</span>
+        <span class="input-prefix"><span>/projects/</span><input name="slug" value="<%= project.slug %>" maxlength="80" placeholder="auto-generated-from-title" data-slug-input <%= project.slug ? 'data-touched' : '' %>></span>
+        <small class="muted">Leave empty to generate from the title. Must be unique.</small>
+      </label>
+      <label class="field <%= errors.summary ? 'has-error' : '' %>"><span>Short summary <em>*</em></span>
+        <textarea name="summary" rows="2" maxlength="400" required placeholder="One or two sentences shown on the portfolio card." data-count-chars><%= project.summary %></textarea>
+        <small class="muted"><span data-char-count>0</span>/400</small>
+        <%- err('summary') %>
+      </label>
+    </section>
+
+    <section class="card stack">
+      <div class="card-head">
+        <h2 class="card-title">Case study content</h2>
+        <div class="tabs" role="tablist">
+          <button type="button" class="tab is-active" role="tab" aria-selected="true" data-tab="write">Write</button>
+          <button type="button" class="tab" role="tab" aria-selected="false" data-tab="preview">Preview</button>
+        </div>
+      </div>
+      <div class="md-toolbar" data-md-toolbar>
+        <button type="button" data-md="## " title="Heading">H2</button>
+        <button type="button" data-md="### " title="Sub-heading">H3</button>
+        <button type="button" data-md-wrap="**" title="Bold"><strong>B</strong></button>
+        <button type="button" data-md-wrap="_" title="Italic"><em>I</em></button>
+        <button type="button" data-md="- " title="Bullet list">• List</button>
+        <button type="button" data-md="> " title="Quote">❝</button>
+        <button type="button" data-md-link title="Link">🔗 Link</button>
+      </div>
+      <textarea class="md-input" name="content" rows="18" data-md-input placeholder="## The challenge&#10;&#10;Describe the problem…&#10;&#10;## Approach&#10;&#10;- What you did&#10;&#10;## Outcome&#10;&#10;Results and impact."><%= project.content %></textarea>
+      <div class="prose md-preview" data-md-preview hidden></div>
+      <small class="muted">Supports Markdown: headings, **bold**, lists, links, quotes and images.</small>
+    </section>
+
+    <section class="card stack">
+      <div class="card-head"><h2 class="card-title">Gallery</h2><span class="muted small"><%= images.length %>/<%= maxGallery %> images</span></div>
+      <% if (errors.gallery) { %><div class="alert alert-error"><%= errors.gallery %></div><% } %>
+      <% if (images.length) { %>
+        <div class="gallery-admin">
+          <% images.forEach(img => { %>
+            <div class="gallery-item">
+              <img src="<%= img.path %>" alt="">
+              <input name="captions[<%= img.id %>]" value="<%= img.caption %>" maxlength="200" placeholder="Caption (optional)" aria-label="Caption">
+              <label class="remove-check"><input type="checkbox" name="remove_images" value="<%= img.id %>"> Remove</label>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+      <label class="dropzone" data-dropzone>
+        <input type="file" name="gallery" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple data-preview-target="gallery-previews">
+        <span class="dz-icon">⇪</span>
+        <strong>Add gallery images</strong>
+        <span class="muted small">Drag &amp; drop or click · JPG, PNG, WEBP, GIF, AVIF · max <%= maxUploadMb %> MB each, up to <%= maxGallery %></span>
+      </label>
+      <div class="preview-grid" id="gallery-previews"></div>
+    </section>
+  </div>
+
+  <aside class="editor-side">
+    <section class="card stack sticky">
+      <h2 class="card-title">Publishing</h2>
+      <label class="switch-field">
+        <input type="checkbox" name="published" value="1" <%= project.published ? 'checked' : '' %>>
+        <span class="switch" aria-hidden="true"></span>
+        <span><strong>Published</strong><small class="muted">Visible on the public website</small></span>
+      </label>
+      <label class="switch-field">
+        <input type="checkbox" name="featured" value="1" <%= project.featured ? 'checked' : '' %>>
+        <span class="switch" aria-hidden="true"></span>
+        <span><strong>Featured</strong><small class="muted">Shown first and in the hero</small></span>
+      </label>
+      <button class="btn btn-primary btn-block" type="submit"><span class="btn-label"><%= isNew ? 'Create project' : 'Save changes' %></span><span class="spinner" aria-hidden="true"></span></button>
+      <% if (!isNew) { %>
+        <p class="muted small center">Created <%= formatDate(project.created_at) %> · Updated <%= formatDate(project.updated_at) %></p>
+      <% } %>
+    </section>
+
+    <section class="card stack">
+      <h2 class="card-title">Cover image</h2>
+      <div class="cover-preview" data-cover-preview>
+        <% if (project.cover_image) { %><img src="<%= project.cover_image %>" alt="Current cover"><% } else { %><span class="muted small">No cover image yet</span><% } %>
+      </div>
+      <label class="btn btn-ghost btn-block file-btn">
+        <input type="file" name="cover" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" data-cover-input>
+        <%= project.cover_image ? 'Replace cover' : 'Upload cover' %>
+      </label>
+      <% if (!isNew && project.cover_image) { %>
+        <label class="remove-check"><input type="checkbox" name="remove_cover" value="1"> Remove current cover</label>
+      <% } %>
+      <small class="muted">Recommended 1200 × 800 px (3:2).</small>
+    </section>
+
+    <section class="card stack">
+      <h2 class="card-title">Meta</h2>
+      <label class="field <%= errors.category_id ? 'has-error' : '' %>"><span>Category</span>
+        <select name="category_id">
+          <option value="">Uncategorised</option>
+          <% categories.forEach(c => { %><option value="<%= c.id %>" <%= Number(project.category_id) === c.id ? 'selected' : '' %>><%= c.name %></option><% }) %>
+        </select>
+        <%- err('category_id') %>
+        <small><a class="link" href="/admin/categories" target="_blank">Manage categories ↗</a></small>
+      </label>
+      <label class="field"><span>Client</span><input name="client" value="<%= project.client %>" maxlength="120" placeholder="Company name"></label>
+      <label class="field"><span>Your role</span><input name="role" value="<%= project.role %>" maxlength="120" placeholder="Lead developer"></label>
+      <label class="field"><span>Year</span><input name="year" value="<%= project.year %>" maxlength="10" placeholder="2025"></label>
+      <label class="field"><span>Tech &amp; tools</span><input name="tech" value="<%= project.tech %>" maxlength="300" placeholder="React, Node.js, Figma"><small class="muted">Comma-separated</small></label>
+      <label class="field <%= errors.live_url ? 'has-error' : '' %>"><span>Live URL</span><input name="live_url" type="url" value="<%= project.live_url %>" placeholder="https://"><%- err('live_url') %></label>
+      <label class="field <%= errors.repo_url ? 'has-error' : '' %>"><span>Source / repo URL</span><input name="repo_url" type="url" value="<%= project.repo_url %>" placeholder="https://"><%- err('repo_url') %></label>
+    </section>
+  </aside>
+</form>
+
+<% if (!isNew) { %>
+  <section class="card danger-zone">
+    <div><h2 class="card-title">Delete project</h2><p class="muted small">Permanently removes this project, its case study page and all of its images.</p></div>
+    <form method="post" action="/admin/projects/<%= project.id %>/delete" data-confirm="Delete &quot;<%= project.title %>&quot; permanently? This cannot be undone.">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn btn-danger" type="submit">Delete project</button>
+    </form>
+  </section>
+<% } %>
+<%- include('partials/bottom') %>

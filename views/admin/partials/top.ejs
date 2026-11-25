@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title><%= title %> · Admin · <%= site.site_name %></title>
+  <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+  <script src="/js/theme.js"></script>
+</head>
+<body class="admin">
+<%
+  const nav = [
+    ['/admin', 'Dashboard', '<path d="M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z"/>'],
+    ['/admin/projects', 'Projects', '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'],
+    ['/admin/categories', 'Categories', '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>'],
+    ['/admin/messages', 'Messages', '<path d="M4 4h16v12H5.2L4 17.2z"/>'],
+    ['/admin/settings', 'Site content', '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'],
+    ['/admin/account', 'Account', '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'],
+  ];
+  const fullPath = currentPath.replace(/\/+$/, '') || '/';
+  const isActive = (href) => href === '/admin' ? fullPath === '/admin' : fullPath.startsWith(href);
+%>
+<div class="admin-shell">
+  <aside class="sidebar" data-sidebar>
+    <a class="sidebar-brand" href="/admin"><span class="brand-mark">A</span><span>Admin<small><%= site.site_name %></small></span></a>
+    <nav class="sidebar-nav" aria-label="Admin">
+      <% nav.forEach(([href, label, icon]) => { %>
+        <a href="<%= href %>" class="<%= isActive(href) ? 'is-active' : '' %>" <%- isActive(href) ? 'aria-current="page"' : '' %>>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><%- icon %></svg><span><%= label %></span>
+          <% if (label === 'Messages' && unread) { %><span class="nav-badge"><%= unread %></span><% } %>
+        </a>
+      <% }) %>
+    </nav>
+    <div class="sidebar-foot">
+      <a class="btn btn-ghost btn-block" href="/" target="_blank" rel="noopener">View live site ↗</a>
+      <form action="/admin/logout" method="post">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn btn-danger-ghost btn-block" type="submit">Log out</button>
+      </form>
+    </div>
+  </aside>
+  <div class="sidebar-backdrop" data-sidebar-close></div>
+
+  <div class="admin-main">
+    <header class="topbar">
+      <button class="icon-btn sidebar-toggle" type="button" data-sidebar-toggle aria-label="Open navigation">☰</button>
+      <h1 class="topbar-title"><%= title %></h1>
+      <div class="topbar-actions">
+        <button class="icon-btn" type="button" data-theme-toggle aria-label="Toggle colour theme">◐</button>
+        <div class="user-pill" title="<%= user.email %>"><span class="avatar"><%= user.name.charAt(0).toUpperCase() %></span><span class="user-name"><%= user.name %></span></div>
+      </div>
+    </header>
+    <main class="admin-content" id="main">
+      <% if (flash) { %>
+        <div class="alert alert-<%= flash.type %>" role="<%= flash.type === 'error' ? 'alert' : 'status' %>" data-dismissible>
+          <span><%= flash.message %></span><button type="button" class="alert-close" aria-label="Dismiss">✕</button>
+        </div>
+      <% } %>

@@ -1,0 +1,165 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<%
+  const featured = projects.filter(p => p.featured && p.cover_image).slice(0, 3);
+  const heroCards = featured.length ? featured : projects.filter(p => p.cover_image).slice(0, 3);
+  const roles = (site.hero_roles || '').split(',').map(s => s.trim()).filter(Boolean);
+  const paragraphs = (site.about_text || '').split(/\n\s*\n/).filter(Boolean);
+  const services = [
+    { icon: '<path d="M8 9l-4 3 4 3M16 9l4 3-4 3M14 5l-4 14"/>', title: 'Web Development', text: 'Fast, secure and scalable web apps built with modern frameworks, clean APIs and solid databases.' },
+    { icon: '<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18M8 21h8"/>', title: 'UI/UX Design', text: 'Research-driven interfaces, wireframes and high-fidelity prototypes that feel intuitive from the first click.' },
+    { icon: '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>', title: 'Mobile Apps', text: 'Cross-platform iOS and Android apps with native-feeling interactions and offline-friendly data.' },
+    { icon: '<path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/><path d="M14 6l3 3"/>', title: 'Branding & Identity', text: 'Logos, colour systems and visual languages that make your product instantly recognisable.' },
+    { icon: '<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>', title: 'Performance & SEO', text: 'Audits and optimisation for Core Web Vitals, accessibility and search visibility.' },
+    { icon: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>', title: 'Maintenance & Support', text: 'Ongoing improvements, monitoring and quick fixes so your product keeps running smoothly.' },
+  ];
+  const process = [
+    ['Discover', 'We define goals, audience and success metrics together.'],
+    ['Design', 'Wireframes and prototypes, tested and refined with real feedback.'],
+    ['Develop', 'Clean, tested code shipped in small, reviewable increments.'],
+    ['Launch & grow', 'Deploy, measure and keep improving after go-live.'],
+  ];
+  const marquee = [
+    ['React', 'react'], ['Node.js', 'nodejs'], ['TypeScript', 'typescript'], ['Next.js', 'nextjs'],
+    ['PostgreSQL', 'postgresql'], ['Figma', 'figma'], ['Tailwind CSS', 'tailwindcss'], ['React Native', 'react-native'],
+    ['GraphQL', 'graphql'], ['Docker', 'docker'], ['AWS', 'aws'], ['Accessibility', 'accessibility'],
+  ];
+%>
+<main id="main">
+
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="hero-bg" aria-hidden="true">
+      <span class="blob blob-1"></span><span class="blob blob-2"></span><span class="blob blob-3"></span>
+      <div class="grid-overlay"></div>
+    </div>
+    <div class="container hero-inner">
+      <div class="hero-copy">
+        <p class="badge reveal"><span class="pulse-dot"></span> Available for new projects</p>
+        <p class="eyebrow reveal" style="--d:80ms"><%= site.hero_eyebrow %></p>
+        <h1 class="hero-title" data-split><%= site.hero_title %></h1>
+        <% if (roles.length) { %>
+          <p class="hero-roles reveal" style="--d:300ms">Specialising in <span class="typed" data-typed='<%= JSON.stringify(roles) %>'><%= roles[0] %></span><span class="caret" aria-hidden="true"></span></p>
+        <% } %>
+        <p class="lead reveal" style="--d:380ms"><%= site.hero_subtitle %></p>
+        <div class="hero-ctas reveal" style="--d:460ms">
+          <a class="btn btn-primary magnetic" href="#portfolio">View my work <span aria-hidden="true">→</span></a>
+          <a class="btn btn-ghost magnetic" href="#contact">Get in touch</a>
+        </div>
+      </div>
+      <div class="hero-visual reveal" style="--d:200ms" aria-hidden="true">
+        <% heroCards.forEach((p, i) => { %>
+          <a class="hero-card hero-card-<%= i + 1 %>" href="/projects/<%= p.slug %>" tabindex="-1">
+            <img src="<%= p.cover_image %>" alt="" width="1200" height="800">
+            <span class="hero-card-label"><%= p.title %></span>
+          </a>
+        <% }) %>
+        <div class="floating-stat"><strong data-count="<%= projects.length %>">0</strong><span>projects shipped</span></div>
+      </div>
+    </div>
+    <a class="scroll-cue" href="#about" aria-label="Scroll to About section"><span></span></a>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <% [...marquee, ...marquee].forEach(([name, icon]) => { %><span class="tech"><span class="tech-logo"><img src="/images/tech/<%= icon %>.svg" alt="" width="28" height="28" loading="lazy"></span><%= name %></span><% }) %>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <section class="section" id="about">
+    <div class="container about-grid">
+      <div>
+        <p class="section-label reveal">About me</p>
+        <h2 class="section-title reveal"><%= site.about_title %></h2>
+        <% paragraphs.forEach((para, i) => { %><p class="reveal muted-strong" style="--d:<%= 80 * (i + 1) %>ms"><%= para %></p><% }) %>
+        <a class="btn btn-ghost reveal" href="#contact">Work with me</a>
+      </div>
+      <div class="stats">
+        <div class="stat-card reveal"><strong><span data-count="<%= site.stat_years || 0 %>">0</span>+</strong><span>Years of experience</span></div>
+        <div class="stat-card reveal" style="--d:80ms"><strong><span data-count="<%= projects.length %>">0</span></strong><span>Published case studies</span></div>
+        <div class="stat-card reveal" style="--d:160ms"><strong><span data-count="<%= site.stat_clients || 0 %>">0</span>+</strong><span>Happy clients</span></div>
+        <div class="stat-card reveal" style="--d:240ms"><strong><span data-count="<%= site.stat_satisfaction || 0 %>">0</span>%</strong><span>Client satisfaction</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="section section-alt" id="services">
+    <div class="container">
+      <div class="section-head">
+        <p class="section-label reveal">Services</p>
+        <h2 class="section-title reveal">What I can do for you</h2>
+        <p class="muted reveal">End-to-end product work, from strategy and design through to engineering and launch.</p>
+      </div>
+      <div class="services-grid">
+        <% services.forEach((s, i) => { %>
+          <article class="service-card reveal" style="--d:<%= (i % 3) * 80 %>ms" data-spotlight>
+            <div class="service-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><%- s.icon %></svg></div>
+            <h3><%= s.title %></h3>
+            <p class="muted"><%= s.text %></p>
+          </article>
+        <% }) %>
+      </div>
+      <ol class="process">
+        <% process.forEach(([t, d], i) => { %>
+          <li class="reveal" style="--d:<%= i * 90 %>ms"><span class="process-num">0<%= i + 1 %></span><h3><%= t %></h3><p class="muted small"><%= d %></p></li>
+        <% }) %>
+      </ol>
+    </div>
+  </section>
+
+  <!-- PORTFOLIO -->
+  <section class="section" id="portfolio">
+    <div class="container">
+      <div class="section-head">
+        <p class="section-label reveal">Portfolio</p>
+        <h2 class="section-title reveal">Selected work &amp; case studies</h2>
+        <p class="muted reveal">A few projects I'm proud of. Click any card to read the full story.</p>
+      </div>
+      <% if (projects.length) { %>
+        <div class="filters reveal" role="group" aria-label="Filter projects by category">
+          <button class="filter is-active" type="button" data-filter="all" aria-pressed="true">All <span><%= projects.length %></span></button>
+          <% categories.forEach(c => { %>
+            <button class="filter" type="button" data-filter="<%= c.slug %>" aria-pressed="false"><%= c.name %> <span><%= c.published_count || 0 %></span></button>
+          <% }) %>
+        </div>
+        <div class="projects-grid" data-projects>
+          <% projects.forEach((p, i) => { %><%- include('partials/project-card', { p, i }) %><% }) %>
+        </div>
+        <div class="empty-state" data-filter-empty hidden><p>No projects in this category yet. New case studies are on their way!</p></div>
+      <% } else { %>
+        <div class="empty-state reveal"><p>New case studies are on their way. Check back soon!</p></div>
+      <% } %>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="section section-alt" id="contact">
+    <div class="container contact-grid">
+      <div>
+        <p class="section-label reveal">Contact</p>
+        <h2 class="section-title reveal">Have a project in mind? Let's build it together.</h2>
+        <p class="muted reveal">Tell me a little about your idea, timeline and budget. I usually reply within one business day.</p>
+        <ul class="contact-list">
+          <% if (site.contact_email) { %><li class="reveal"><span class="contact-icon">✉</span><div><span class="muted small">Email</span><a href="mailto:<%= site.contact_email %>"><%= site.contact_email %></a></div></li><% } %>
+          <% if (site.contact_phone) { %><li class="reveal" style="--d:80ms"><span class="contact-icon">☏</span><div><span class="muted small">Phone</span><a href="tel:<%= site.contact_phone.replace(/[^\d+]/g, '') %>"><%= site.contact_phone %></a></div></li><% } %>
+          <% if (site.location) { %><li class="reveal" style="--d:160ms"><span class="contact-icon">⌖</span><div><span class="muted small">Location</span><span><%= site.location %></span></div></li><% } %>
+        </ul>
+      </div>
+      <form class="contact-form reveal" action="/contact" method="post" data-contact-form novalidate>
+        <div class="form-row">
+          <label class="field"><span>Name</span><input name="name" required maxlength="120" autocomplete="name" placeholder="Jane Doe"></label>
+          <label class="field"><span>Email</span><input name="email" type="email" required maxlength="200" autocomplete="email" placeholder="jane@company.com"></label>
+        </div>
+        <label class="field"><span>Subject</span><input name="subject" maxlength="200" placeholder="New website project"></label>
+        <label class="field"><span>Message</span><textarea name="message" rows="5" required minlength="10" maxlength="5000" placeholder="Tell me about your project…"></textarea></label>
+        <input type="hidden" name="form_ts" value="<%= Date.now() %>">
+        <button class="btn btn-primary btn-block" type="submit"><span class="btn-label">Send message</span><span class="spinner" aria-hidden="true"></span></button>
+        <p class="form-status <%= sent ? 'is-success' : '' %>" role="status" aria-live="polite"><%= sent ? "Thanks! Your message has been sent. I'll be in touch soon." : '' %></p>
+      </form>
+    </div>
+  </section>
+</main>
+<%- include('partials/footer') %>

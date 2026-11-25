@@ -1,0 +1,15 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main" class="error-page">
+  <div class="hero-bg" aria-hidden="true"><span class="blob blob-1"></span><span class="blob blob-2"></span></div>
+  <div class="container error-inner">
+    <p class="error-code"><%= status %></p>
+    <h1><%= title %></h1>
+    <p class="lead"><%= message %></p>
+    <div class="hero-ctas">
+      <a class="btn btn-primary" href="/">Back to homepage</a>
+      <button class="btn btn-ghost" type="button" data-history-back>Go back</button>
+    </div>
+  </div>
+</main>
+<%- include('partials/footer') %>

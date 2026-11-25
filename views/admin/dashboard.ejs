@@ -1,0 +1,55 @@
+<%- include('partials/top') %>
+<section class="welcome card">
+  <div>
+    <h2>Hello, <%= user.name.split(' ')[0] %> 👋</h2>
+    <p class="muted">Here's what's happening with your portfolio.<% if (user.last_login_at) { %> Last sign-in: <%= formatDate(user.last_login_at) %>.<% } %></p>
+  </div>
+  <div class="row-actions">
+    <a class="btn btn-primary" href="/admin/projects/new">+ New project</a>
+    <a class="btn btn-ghost" href="/" target="_blank" rel="noopener">View site ↗</a>
+  </div>
+</section>
+
+<section class="stat-grid">
+  <a class="stat card" href="/admin/projects"><span class="stat-label">Total projects</span><strong><%= stats.total %></strong></a>
+  <a class="stat card" href="/admin/projects?status=published"><span class="stat-label">Published</span><strong class="text-success"><%= stats.published %></strong></a>
+  <a class="stat card" href="/admin/projects?status=draft"><span class="stat-label">Drafts</span><strong class="text-warning"><%= stats.drafts %></strong></a>
+  <a class="stat card" href="/admin/messages"><span class="stat-label">Unread messages</span><strong class="text-accent"><%= stats.unread %></strong><span class="muted small"><%= stats.messages %> total</span></a>
+</section>
+
+<div class="two-col">
+  <section class="card">
+    <div class="card-head"><h2>Recent projects</h2><a href="/admin/projects" class="link">View all →</a></div>
+    <% if (recent.length) { %>
+      <ul class="list">
+        <% recent.forEach(p => { %>
+          <li>
+            <div class="thumb"><% if (p.cover_image) { %><img src="<%= p.cover_image %>" alt=""><% } else { %><span><%= p.title.charAt(0) %></span><% } %></div>
+            <div class="grow"><a href="/admin/projects/<%= p.id %>/edit" class="strong"><%= p.title %></a><div class="muted small"><%= p.category_name || 'Uncategorised' %> · updated <%= formatDate(p.updated_at) %></div></div>
+            <span class="status <%= p.published ? 'status-live' : 'status-draft' %>"><%= p.published ? 'Published' : 'Draft' %></span>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p class="empty">No projects yet. <a class="link" href="/admin/projects/new">Create your first one</a>.</p>
+    <% } %>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Latest messages</h2><a href="/admin/messages" class="link">Inbox →</a></div>
+    <% if (messages.length) { %>
+      <ul class="list">
+        <% messages.forEach(m => { %>
+          <li>
+            <span class="avatar small"><%= m.name.charAt(0).toUpperCase() %></span>
+            <div class="grow"><span class="strong"><%= m.name %></span> <% if (!m.is_read) { %><span class="dot" title="Unread"></span><% } %><div class="muted small clamp-1"><%= m.subject || m.body %></div></div>
+            <span class="muted small"><%= formatDate(m.created_at) %></span>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p class="empty">No messages yet. Messages sent through the contact form appear here.</p>
+    <% } %>
+  </section>
+</div>
+<%- include('partials/bottom') %>

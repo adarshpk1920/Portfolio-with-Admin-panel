@@ -1,0 +1,36 @@
+<%- include('partials/top') %>
+<div class="two-col narrow-right">
+  <section class="card">
+    <div class="card-head"><h2 class="card-title">All categories</h2><span class="muted small"><%= categories.length %> total</span></div>
+    <% if (categories.length) { %>
+      <ul class="list cat-list">
+        <% categories.forEach(c => { %>
+          <li>
+            <form class="inline-edit grow" method="post" action="/admin/categories/<%= c.id %>">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input name="name" value="<%= c.name %>" maxlength="60" required aria-label="Category name">
+              <button class="btn btn-sm btn-ghost" type="submit">Rename</button>
+            </form>
+            <a class="muted small nowrap" href="/admin/projects?category=<%= c.id %>"><%= c.project_count %> project<%= c.project_count === 1 ? '' : 's' %></a>
+            <form method="post" action="/admin/categories/<%= c.id %>/delete" data-confirm="Delete the &quot;<%= c.name %>&quot; category? Its <%= c.project_count %> project(s) will become uncategorised (they are not deleted).">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="btn btn-sm btn-danger-ghost" type="submit">Delete</button>
+            </form>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p class="empty">No categories yet.</p>
+    <% } %>
+  </section>
+  <section class="card stack">
+    <h2 class="card-title">Add category</h2>
+    <form class="stack" method="post" action="/admin/categories">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label class="field"><span>Name</span><input name="name" maxlength="60" required placeholder="e.g. E-commerce"></label>
+      <button class="btn btn-primary btn-block" type="submit">Add category</button>
+    </form>
+    <p class="muted small">Every category appears as a filter on the public portfolio straight away. Assign it to a project from the project editor.</p>
+  </section>
+</div>
+<%- include('partials/bottom') %>

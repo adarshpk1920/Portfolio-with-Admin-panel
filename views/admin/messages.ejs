@@ -1,0 +1,37 @@
+<%- include('partials/top') %>
+<% if (messages.length) { %>
+  <div class="messages">
+    <% messages.forEach(m => { %>
+      <details class="card message <%= m.is_read ? '' : 'is-unread' %>" data-message-id="<%= m.id %>">
+        <summary>
+          <span class="avatar small"><%= m.name.charAt(0).toUpperCase() %></span>
+          <span class="grow">
+            <span class="strong"><%= m.name %></span> <span class="muted small">&lt;<%= m.email %>&gt;</span>
+            <span class="clamp-1 muted"><%= m.subject || m.body %></span>
+          </span>
+          <% if (!m.is_read) { %><span class="pill pill-accent">New</span><% } %>
+          <span class="muted small nowrap"><%= formatDate(m.created_at) %></span>
+        </summary>
+        <div class="message-body">
+          <% if (m.subject) { %><p class="strong"><%= m.subject %></p><% } %>
+          <p class="pre"><%= m.body %></p>
+          <div class="row-actions">
+            <a class="btn btn-sm btn-primary" href="mailto:<%= m.email %>?subject=<%= encodeURIComponent('Re: ' + (m.subject || 'Your message')) %>">Reply by email</a>
+            <form method="post" action="/admin/messages/<%= m.id %>/read">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="read" value="<%= m.is_read ? '0' : '1' %>">
+              <button class="btn btn-sm btn-ghost" type="submit">Mark as <%= m.is_read ? 'unread' : 'read' %></button>
+            </form>
+            <form method="post" action="/admin/messages/<%= m.id %>/delete" data-confirm="Delete this message from <%= m.name %>?">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="btn btn-sm btn-danger-ghost" type="submit">Delete</button>
+            </form>
+          </div>
+        </div>
+      </details>
+    <% }) %>
+  </div>
+<% } else { %>
+  <div class="card empty-card"><h2>Inbox zero 🎉</h2><p class="muted">Messages from the website's contact form will appear here.</p></div>
+<% } %>
+<%- include('partials/bottom') %>

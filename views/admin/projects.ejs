@@ -1,0 +1,77 @@
+<%- include('partials/top') %>
+<div class="toolbar">
+  <form class="filters-bar" method="get" action="/admin/projects">
+    <input type="search" name="q" value="<%= filters.q %>" placeholder="Search title, client, summary…" aria-label="Search projects">
+    <select name="status" aria-label="Filter by status">
+      <option value="">All statuses</option>
+      <option value="published" <%= filters.status === 'published' ? 'selected' : '' %>>Published</option>
+      <option value="draft" <%= filters.status === 'draft' ? 'selected' : '' %>>Drafts</option>
+    </select>
+    <select name="category" aria-label="Filter by category">
+      <option value="">All categories</option>
+      <% categories.forEach(c => { %><option value="<%= c.id %>" <%= String(filters.category) === String(c.id) ? 'selected' : '' %>><%= c.name %></option><% }) %>
+    </select>
+    <button class="btn btn-ghost" type="submit">Filter</button>
+    <% if (filters.q || filters.status || filters.category) { %><a class="link small" href="/admin/projects">Clear</a><% } %>
+  </form>
+  <a class="btn btn-primary" href="/admin/projects/new">+ New project</a>
+</div>
+
+<% const filtered = filters.q || filters.status || filters.category; %>
+<% if (projects.length) { %>
+  <div class="card table-card">
+    <table class="table">
+      <thead>
+        <tr><th>Project</th><th>Category</th><th>Status</th><th>Updated</th><th class="right">Actions</th></tr>
+      </thead>
+      <tbody>
+        <% projects.forEach((p, i) => { %>
+          <tr>
+            <td data-label="Project">
+              <div class="project-cell">
+                <div class="thumb"><% if (p.cover_image) { %><img src="<%= p.cover_image %>" alt=""><% } else { %><span><%= p.title.charAt(0) %></span><% } %></div>
+                <div>
+                  <a class="strong" href="/admin/projects/<%= p.id %>/edit"><%= p.title %></a>
+                  <% if (p.featured) { %><span class="pill">★ Featured</span><% } %>
+                  <div class="muted small">/projects/<%= p.slug %> · <%= p.image_count %> gallery image<%= p.image_count === 1 ? '' : 's' %></div>
+                </div>
+              </div>
+            </td>
+            <td data-label="Category"><%= p.category_name || '—' %></td>
+            <td data-label="Status">
+              <form method="post" action="/admin/projects/<%= p.id %>/toggle">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button class="status-toggle <%= p.published ? 'status-live' : 'status-draft' %>" type="submit" title="Click to <%= p.published ? 'unpublish' : 'publish' %>">
+                  <span class="switch" aria-hidden="true"></span><%= p.published ? 'Published' : 'Draft' %>
+                </button>
+              </form>
+            </td>
+            <td data-label="Updated" class="muted small"><%= formatDate(p.updated_at) %></td>
+            <td class="right">
+              <div class="row-actions">
+                <% if (!filtered) { %>
+                  <form method="post" action="/admin/projects/<%= p.id %>/move"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="direction" value="up"><button class="icon-btn sm" type="submit" title="Move up" aria-label="Move up" <%= i === 0 ? 'disabled' : '' %>>↑</button></form>
+                  <form method="post" action="/admin/projects/<%= p.id %>/move"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="direction" value="down"><button class="icon-btn sm" type="submit" title="Move down" aria-label="Move down" <%= i === projects.length - 1 ? 'disabled' : '' %>>↓</button></form>
+                <% } %>
+                <a class="btn btn-sm btn-ghost" href="<%= p.published ? `/projects/${p.slug}` : `/admin/projects/${p.id}/preview` %>" target="_blank" rel="noopener"><%= p.published ? 'View' : 'Preview' %></a>
+                <a class="btn btn-sm btn-ghost" href="/admin/projects/<%= p.id %>/edit">Edit</a>
+                <form method="post" action="/admin/projects/<%= p.id %>/delete" data-confirm="Delete &quot;<%= p.title %>&quot;? This removes the project and all its images permanently.">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button class="btn btn-sm btn-danger-ghost" type="submit">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small hint">Order here controls the order on the public site (featured projects are shown first). Click a status to publish or unpublish instantly.</p>
+<% } else { %>
+  <div class="card empty-card">
+    <h2><%= filtered ? 'No matching projects' : 'No projects yet' %></h2>
+    <p class="muted"><%= filtered ? 'Try a different search or clear the filters.' : 'Add your first case study and it will appear on the public site as soon as it is published.' %></p>
+    <a class="btn btn-primary" href="/admin/projects/new">+ New project</a>
+  </div>
+<% } %>
+<%- include('partials/bottom') %>

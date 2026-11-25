@@ -1,0 +1,25 @@
+# One-click deploy on Render (https://render.com) via "New > Blueprint".
+# A persistent disk keeps the SQLite database and uploaded images across deploys.
+services:
+  - type: web
+    name: portfolio-admin
+    runtime: node
+    plan: starter
+    buildCommand: npm ci
+    startCommand: node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /var/data
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        value: admin@portfolio.dev
+      - key: ADMIN_PASSWORD
+        sync: false
+    disk:
+      name: portfolio-data
+      mountPath: /var/data
+      sizeGB: 1

@@ -1,0 +1,46 @@
+<%- include('partials/top') %>
+<% const v = (k) => values[k] || ''; %>
+<form class="settings" method="post" action="/admin/settings">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <section class="card stack">
+    <h2 class="card-title">Hero section</h2>
+    <div class="grid-2">
+      <label class="field"><span>Site / owner name</span><input name="site_name" value="<%= v('site_name') %>" maxlength="80" required></label>
+      <label class="field"><span>Eyebrow (job title)</span><input name="hero_eyebrow" value="<%= v('hero_eyebrow') %>" maxlength="120"></label>
+    </div>
+    <label class="field"><span>Headline</span><input name="hero_title" value="<%= v('hero_title') %>" maxlength="160"><small class="muted">The last two words get the gradient highlight.</small></label>
+    <label class="field"><span>Intro paragraph</span><textarea name="hero_subtitle" rows="2" maxlength="400"><%= v('hero_subtitle') %></textarea></label>
+    <label class="field"><span>Rotating specialities</span><input name="hero_roles" value="<%= v('hero_roles') %>" maxlength="300"><small class="muted">Comma-separated. These are typed out one after another.</small></label>
+  </section>
+
+  <section class="card stack">
+    <h2 class="card-title">About section</h2>
+    <label class="field"><span>Heading</span><input name="about_title" value="<%= v('about_title') %>" maxlength="160"></label>
+    <label class="field"><span>About text</span><textarea name="about_text" rows="6" maxlength="3000"><%= v('about_text') %></textarea><small class="muted">Leave a blank line between paragraphs.</small></label>
+    <div class="grid-3">
+      <label class="field"><span>Years of experience</span><input name="stat_years" value="<%= v('stat_years') %>" inputmode="numeric"></label>
+      <label class="field"><span>Happy clients</span><input name="stat_clients" value="<%= v('stat_clients') %>" inputmode="numeric"></label>
+      <label class="field"><span>Satisfaction %</span><input name="stat_satisfaction" value="<%= v('stat_satisfaction') %>" inputmode="numeric"></label>
+    </div>
+    <small class="muted">The "Published case studies" counter is calculated automatically.</small>
+  </section>
+
+  <section class="card stack">
+    <h2 class="card-title">Contact &amp; social</h2>
+    <div class="grid-3">
+      <label class="field"><span>Email</span><input name="contact_email" type="email" value="<%= v('contact_email') %>"></label>
+      <label class="field"><span>Phone</span><input name="contact_phone" value="<%= v('contact_phone') %>"></label>
+      <label class="field"><span>Location</span><input name="location" value="<%= v('location') %>"></label>
+    </div>
+    <div class="grid-3">
+      <label class="field"><span>GitHub URL</span><input name="social_github" type="url" value="<%= v('social_github') %>" placeholder="https://"></label>
+      <label class="field"><span>LinkedIn URL</span><input name="social_linkedin" type="url" value="<%= v('social_linkedin') %>" placeholder="https://"></label>
+      <label class="field"><span>Dribbble URL</span><input name="social_dribbble" type="url" value="<%= v('social_dribbble') %>" placeholder="https://"></label>
+    </div>
+    <small class="muted">Leave a social link empty to hide it.</small>
+  </section>
+
+  <div class="save-bar"><button class="btn btn-primary" type="submit">Save site content</button></div>
+</form>
+<%- include('partials/bottom') %>

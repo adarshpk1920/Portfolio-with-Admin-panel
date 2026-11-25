@@ -1,0 +1,97 @@
+<%- include('partials/head', { ogImage: project.cover_image }) %>
+<%- include('partials/header') %>
+<main id="main" class="case">
+  <% if (preview) { %>
+    <div class="preview-bar">
+      <span><strong>Preview mode</strong> · This project is <%= project.published ? 'published' : 'a draft and not visible to the public' %>.</span>
+      <a class="btn btn-sm btn-ghost" href="/admin/projects/<%= project.id %>/edit">← Back to editor</a>
+    </div>
+  <% } %>
+
+  <section class="case-hero">
+    <div class="hero-bg" aria-hidden="true"><span class="blob blob-1"></span><span class="blob blob-2"></span></div>
+    <div class="container">
+      <nav class="breadcrumbs reveal" aria-label="Breadcrumb">
+        <a href="/">Home</a><span>/</span><a href="/#portfolio">Portfolio</a><span>/</span><span aria-current="page"><%= project.title %></span>
+      </nav>
+      <span class="chip reveal"><%= project.category_name || 'Project' %></span>
+      <h1 class="case-title" data-split><%= project.title %></h1>
+      <p class="lead reveal" style="--d:200ms"><%= project.summary %></p>
+      <dl class="case-facts reveal" style="--d:280ms">
+        <% if (project.client) { %><div><dt>Client</dt><dd><%= project.client %></dd></div><% } %>
+        <% if (project.role) { %><div><dt>Role</dt><dd><%= project.role %></dd></div><% } %>
+        <% if (project.year) { %><div><dt>Year</dt><dd><%= project.year %></dd></div><% } %>
+        <% if (project.category_name) { %><div><dt>Category</dt><dd><%= project.category_name %></dd></div><% } %>
+      </dl>
+      <% if (project.live_url || project.repo_url) { %>
+        <div class="hero-ctas reveal" style="--d:340ms">
+          <% if (project.live_url) { %><a class="btn btn-primary magnetic" href="<%= project.live_url %>" target="_blank" rel="noopener noreferrer">Visit live site ↗</a><% } %>
+          <% if (project.repo_url) { %><a class="btn btn-ghost magnetic" href="<%= project.repo_url %>" target="_blank" rel="noopener noreferrer">View source ↗</a><% } %>
+        </div>
+      <% } %>
+    </div>
+  </section>
+
+  <div class="container">
+    <figure class="case-cover reveal">
+      <% if (project.cover_image) { %>
+        <img src="<%= project.cover_image %>" alt="<%= project.title %> cover image" width="1200" height="800" data-lightbox>
+      <% } else { %>
+        <div class="project-placeholder large" aria-hidden="true"><%= project.title.charAt(0) %></div>
+      <% } %>
+    </figure>
+
+    <div class="case-layout">
+      <article class="prose reveal"><%- project.html %></article>
+      <aside class="case-aside">
+        <% if (project.techList.length) { %>
+          <div class="aside-card reveal">
+            <h2 class="aside-title">Tech &amp; tools</h2>
+            <ul class="tags"><% project.techList.forEach(t => { %><li><%= t %></li><% }) %></ul>
+          </div>
+        <% } %>
+        <div class="aside-card reveal" style="--d:80ms">
+          <h2 class="aside-title">Like what you see?</h2>
+          <p class="muted small">I'm currently taking on new projects.</p>
+          <a class="btn btn-primary btn-block" href="/#contact">Start a project</a>
+        </div>
+      </aside>
+    </div>
+
+    <% if (images.length) { %>
+      <section class="gallery" aria-label="Project gallery">
+        <h2 class="section-title small reveal">Gallery</h2>
+        <div class="gallery-grid">
+          <% images.forEach((img, i) => { %>
+            <figure class="reveal" style="--d:<%= (i % 3) * 80 %>ms">
+              <img src="<%= img.path %>" alt="<%= img.caption || `${project.title} screenshot ${i + 1}` %>" loading="lazy" data-lightbox>
+              <% if (img.caption) { %><figcaption><%= img.caption %></figcaption><% } %>
+            </figure>
+          <% }) %>
+        </div>
+      </section>
+    <% } %>
+
+    <% if (prev && next && prev.id !== project.id) { %>
+      <nav class="case-nav" aria-label="More projects">
+        <a class="case-nav-link reveal" href="/projects/<%= prev.slug %>"><span class="muted small">← Previous</span><strong><%= prev.title %></strong></a>
+        <a class="case-nav-link next reveal" href="/projects/<%= next.slug %>"><span class="muted small">Next →</span><strong><%= next.title %></strong></a>
+      </nav>
+    <% } %>
+
+    <% if (!preview && related.length) { %>
+      <section class="section related">
+        <h2 class="section-title small reveal">More case studies</h2>
+        <div class="projects-grid">
+          <% related.forEach((p, i) => { %><%- include('partials/project-card', { p: { ...p, techList: (p.tech || '').split(',').map(s => s.trim()).filter(Boolean) }, i }) %><% }) %>
+        </div>
+      </section>
+    <% } %>
+  </div>
+
+  <div class="lightbox" data-lightbox-root hidden>
+    <button class="icon-btn lightbox-close" type="button" aria-label="Close image">✕</button>
+    <img alt="">
+  </div>
+</main>
+<%- include('partials/footer') %>
