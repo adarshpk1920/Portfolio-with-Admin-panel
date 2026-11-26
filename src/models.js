@@ -141,6 +141,44 @@ function createModels(db) {
     },
   };
 
+  const testimonials = {
+    all() {
+      return db.prepare('SELECT * FROM testimonials ORDER BY sort_order, id').all();
+    },
+    published() {
+      return db.prepare('SELECT * FROM testimonials WHERE published = 1 ORDER BY sort_order, id').all();
+    },
+    find(id) {
+      return db.prepare('SELECT * FROM testimonials WHERE id = ?').get(id);
+    },
+    create(data) {
+      const next = db.prepare('SELECT COALESCE(MAX(sort_order), -1) + 1 AS n FROM testimonials').get().n;
+      return db
+        .prepare(`INSERT INTO testimonials (name, role, quote, rating, avatar, published, sort_order)
+          VALUES (@name, @role, @quote, @rating, @avatar, @published, @sort_order)`)
+        .run({ ...data, sort_order: next }).lastInsertRowid;
+    },
+    update(id, data) {
+      db.prepare(`UPDATE testimonials SET name=@name, role=@role, quote=@quote, rating=@rating, avatar=@avatar,
+          published=@published, updated_at=datetime('now') WHERE id=@id`).run({ ...data, id });
+    },
+    setPublished(id, published) {
+      db.prepare("UPDATE testimonials SET published = ?, updated_at = datetime('now') WHERE id = ?").run(published ? 1 : 0, id);
+    },
+    move(id, direction) {
+      const list = db.prepare('SELECT id FROM testimonials ORDER BY sort_order, id').all().map((r) => r.id);
+      const i = list.indexOf(id);
+      const j = direction === 'up' ? i - 1 : i + 1;
+      if (i < 0 || j < 0 || j >= list.length) return;
+      [list[i], list[j]] = [list[j], list[i]];
+      const stmt = db.prepare('UPDATE testimonials SET sort_order = ? WHERE id = ?');
+      db.transaction(() => list.forEach((tid, idx) => stmt.run(idx, tid)))();
+    },
+    remove(id) {
+      db.prepare('DELETE FROM testimonials WHERE id = ?').run(id);
+    },
+  };
+
   const messages = {
     all() {
       return db.prepare('SELECT * FROM messages ORDER BY created_at DESC, id DESC').all();
@@ -191,7 +229,7 @@ function createModels(db) {
           (SELECT COUNT(*) FROM messages WHERE is_read = 0) AS unread`)
       .get();
 
-  return { settings, categories, projects, messages, users, stats };
+  return { settings, categories, projects, testimonials, messages, users, stats };
 }
 
 module.exports = { createModels };

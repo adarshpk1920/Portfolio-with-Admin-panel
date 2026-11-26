@@ -203,4 +203,60 @@
       }).catch(() => {});
     })
   );
+
+  /* Testimonial form: live card preview, character counter, photo preview */
+  const tForm = $('[data-testimonial-form]');
+  if (tForm) {
+    const nameIn = $('[data-t-name]', tForm);
+    const roleIn = $('[data-t-role]', tForm);
+    const quoteIn = $('[data-t-quote]', tForm);
+    const count = $('[data-t-count]', tForm);
+    const avatarIn = $('[data-avatar-input]', tForm);
+    const avatarBox = $('[data-avatar-preview]', tForm);
+    const removeAvatar = $('input[name="remove_avatar"]', tForm);
+    const p = {
+      name: $('[data-p-name]', tForm), role: $('[data-p-role]', tForm), quote: $('[data-p-quote]', tForm),
+      stars: $('[data-p-stars]', tForm), avatar: $('[data-p-avatar]', tForm),
+    };
+    const originalPhoto = $('img', avatarBox)?.getAttribute('src') || '';
+    let photoUrl = originalPhoto;
+    const initials = (n) => n.trim().split(/\s+/).filter(Boolean).map((w) => w[0]).join('').slice(0, 2).toUpperCase() || '?';
+    // textContent only: the preview never interprets typed text as HTML.
+    const setAvatar = (box) => {
+      box.textContent = '';
+      if (photoUrl) {
+        const img = new Image();
+        img.alt = '';
+        img.src = photoUrl;
+        box.appendChild(img);
+      } else {
+        box.textContent = initials(nameIn.value);
+      }
+    };
+    const render = () => {
+      p.name.textContent = nameIn.value.trim() || 'Client name';
+      p.role.textContent = roleIn.value.trim() || 'Role, Company';
+      p.quote.textContent = quoteIn.value.trim() || 'The testimonial text will appear here.';
+      const rating = Number($('input[name="rating"]:checked', tForm)?.value || 5);
+      p.stars.textContent = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+      count.textContent = quoteIn.value.length;
+      setAvatar(p.avatar);
+      setAvatar(avatarBox);
+    };
+    tForm.addEventListener('input', render);
+    tForm.addEventListener('change', render);
+    avatarIn?.addEventListener('change', () => {
+      const file = avatarIn.files[0];
+      if (!file) return;
+      photoUrl = URL.createObjectURL(file);
+      if (removeAvatar) removeAvatar.checked = false;
+      render();
+    });
+    removeAvatar?.addEventListener('change', () => {
+      if (removeAvatar.checked) photoUrl = '';
+      else photoUrl = avatarIn.files[0] ? URL.createObjectURL(avatarIn.files[0]) : originalPhoto;
+      render();
+    });
+    render();
+  }
 })();

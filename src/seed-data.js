@@ -151,4 +151,15 @@ const projects = [
   },
 ];
 
-module.exports = { settings, categories, projects };
+const testimonials = [
+  { name: 'Priya Raman', role: 'Founder, Lumen Analytics', quote: 'The new dashboard turned our raw data into decisions. Our team checks it every morning, and support tickets about reports dropped by half.' },
+  { name: 'Daniel Okafor', role: 'Head of Growth, Verde', quote: 'Fast, thoughtful and easy to work with. The storefront loads in under a second and our conversion rate jumped in the first month.' },
+  { name: 'Sara Lindqvist', role: 'Product Lead, Pulse', quote: 'Every screen felt considered. Users told us the app was "fun to open", which is exactly what we hoped for.' },
+  { name: 'Marco Bellini', role: 'Design Director, Nimbus', quote: 'The design system saved our designers and developers hours every week. Clear docs, clean components, zero drama.' },
+  { name: 'Aisha Khan', role: 'CEO, Atlas Travel', quote: 'From the first call to launch day the communication was excellent. We always knew what was happening and why.' },
+  { name: 'Tom Hughes', role: 'Owner, Ember Coffee', quote: 'Our rebrand finally feels like us. Customers noticed the new packaging immediately and our café traffic grew.' },
+  { name: 'Neha Verma', role: 'CTO, Brightside Labs', quote: 'Clean code, great tests and a handover so clear our in-house team took over without a single question.' },
+  { name: 'Lucas Martin', role: 'Product Manager, Orbit', quote: 'Delivered ahead of schedule and genuinely cared about our users. I would hire again without hesitation.' },
+];
+
+module.exports = { settings, categories, projects, testimonials };

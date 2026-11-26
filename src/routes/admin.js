@@ -295,6 +295,103 @@ module.exports = function adminRoutes(models) {
     res.redirect('/admin/categories');
   });
 
+  /* ---------------- Testimonials ---------------- */
+
+  const avatarUpload = upload.single('avatar');
+  const emptyTestimonial = { id: null, name: '', role: '', quote: '', rating: 5, avatar: '', published: 1 };
+
+  router.get('/testimonials', (req, res) => {
+    res.render('admin/testimonials', { title: 'Testimonials', testimonials: models.testimonials.all() });
+  });
+
+  function renderTestimonialForm(res, testimonial, { errors = {}, status = 200 } = {}) {
+    res.status(status).render('admin/testimonial-form', {
+      title: testimonial.id ? `Edit testimonial: ${testimonial.name}` : 'New testimonial',
+      testimonial,
+      errors,
+      maxUploadMb: config.maxUploadMb,
+    });
+  }
+
+  function readTestimonialForm(req, existing) {
+    const b = req.body;
+    const rating = Math.round(Number(b.rating));
+    const data = {
+      name: String(b.name || '').trim().slice(0, 80),
+      role: String(b.role || '').trim().slice(0, 120),
+      quote: String(b.quote || '').trim().slice(0, 600),
+      rating: rating >= 1 && rating <= 5 ? rating : 5,
+      avatar: existing?.avatar || '',
+      published: b.published ? 1 : 0,
+    };
+    const errors = {};
+    if (!data.name) errors.name = 'Client name is required.';
+    if (!data.quote) errors.quote = 'Please enter the testimonial text.';
+    else if (data.quote.length < 15) errors.quote = 'The testimonial is a little short (at least 15 characters).';
+    return { data, errors };
+  }
+
+  function loadTestimonial(req, res, next) {
+    const t = models.testimonials.find(Number(req.params.id));
+    if (!t) return res.status(404).render('error', { title: 'Not found', status: 404, message: 'That testimonial no longer exists.' });
+    req.testimonial = t;
+    next();
+  }
+
+  router.get('/testimonials/new', (req, res) => renderTestimonialForm(res, { ...emptyTestimonial }));
+
+  router.post('/testimonials', avatarUpload, verifyCsrf, (req, res) => {
+    if (req.file) verifyImages([req.file]);
+    const { data, errors } = readTestimonialForm(req);
+    if (Object.keys(errors).length) {
+      if (req.file) removeUpload(publicPath(req.file));
+      if (req.file) errors._files = 'Please re-select the photo after fixing the errors.';
+      return renderTestimonialForm(res, { ...emptyTestimonial, ...data }, { errors, status: 422 });
+    }
+    if (req.file) data.avatar = publicPath(req.file);
+    models.testimonials.create(data);
+    req.flash('success', `Testimonial from ${data.name} was added${data.published ? ' and is now live' : ' as hidden'}.`);
+    res.redirect('/admin/testimonials');
+  });
+
+  router.get('/testimonials/:id/edit', loadTestimonial, (req, res) => renderTestimonialForm(res, req.testimonial));
+
+  router.post('/testimonials/:id', loadTestimonial, avatarUpload, verifyCsrf, (req, res) => {
+    const existing = req.testimonial;
+    if (req.file) verifyImages([req.file]);
+    const { data, errors } = readTestimonialForm(req, existing);
+    if (Object.keys(errors).length) {
+      if (req.file) removeUpload(publicPath(req.file));
+      return renderTestimonialForm(res, { ...existing, ...data }, { errors, status: 422 });
+    }
+    if (req.file || req.body.remove_avatar) {
+      removeUpload(existing.avatar);
+      data.avatar = req.file ? publicPath(req.file) : '';
+    }
+    models.testimonials.update(existing.id, data);
+    req.flash('success', `Testimonial from ${data.name} was saved.`);
+    res.redirect('/admin/testimonials');
+  });
+
+  router.post('/testimonials/:id/toggle', verifyCsrf, loadTestimonial, (req, res) => {
+    const next = !req.testimonial.published;
+    models.testimonials.setPublished(req.testimonial.id, next);
+    req.flash('success', `Testimonial from ${req.testimonial.name} is now ${next ? 'visible on the site' : 'hidden'}.`);
+    res.redirect('/admin/testimonials');
+  });
+
+  router.post('/testimonials/:id/move', verifyCsrf, loadTestimonial, (req, res) => {
+    models.testimonials.move(req.testimonial.id, req.body.direction === 'up' ? 'up' : 'down');
+    res.redirect('/admin/testimonials');
+  });
+
+  router.post('/testimonials/:id/delete', verifyCsrf, loadTestimonial, (req, res) => {
+    models.testimonials.remove(req.testimonial.id);
+    removeUpload(req.testimonial.avatar);
+    req.flash('success', `Testimonial from ${req.testimonial.name} was deleted.`);
+    res.redirect('/admin/testimonials');
+  });
+
   /* ---------------- Messages ---------------- */
 
   router.get('/messages', (req, res) => {

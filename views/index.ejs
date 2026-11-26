@@ -24,6 +24,25 @@
     ['PostgreSQL', 'postgresql'], ['Figma', 'figma'], ['Tailwind CSS', 'tailwindcss'], ['React Native', 'react-native'],
     ['GraphQL', 'graphql'], ['Docker', 'docker'], ['AWS', 'aws'], ['Accessibility', 'accessibility'],
   ];
+  const skills = {
+    Frontend: [['React / Next.js', 95], ['TypeScript', 90], ['HTML, CSS & Tailwind', 96], ['Animation & motion', 85]],
+    Backend: [['Node.js / Express', 90], ['PostgreSQL / SQLite', 84], ['REST & GraphQL APIs', 88], ['Auth & security', 82]],
+    Design: [['Figma', 92], ['UI/UX & prototyping', 88], ['Design systems', 86], ['Accessibility', 90]],
+    Tools: [['Git & GitHub', 92], ['Docker', 78], ['AWS / Render', 76], ['Testing & CI', 82]],
+  };
+  // Testimonials come from the admin panel. With 4+ they split into two rows that slide in
+  // opposite directions; each row repeats its cards so the loop never shows a gap.
+  const tRows = testimonials.length >= 4
+    ? [testimonials.slice(0, Math.ceil(testimonials.length / 2)), testimonials.slice(Math.ceil(testimonials.length / 2))]
+    : testimonials.length ? [testimonials] : [];
+  const fillRow = (row) => { const out = []; while (out.length < 4) out.push(...row); return out; };
+  const faqs = [
+    ['What kind of projects do you take on?', 'Websites, web apps, dashboards and mobile apps, from a single landing page to a full product with its own admin panel.'],
+    ['How long does a typical project take?', 'A landing page usually takes 1–2 weeks and a complete web app 4–8 weeks. You get a clear timeline before we start.'],
+    ['Can you work with my existing team or code?', 'Yes. I can join your team, build from your designs or codebase, and hand over clean, documented code.'],
+    ['Do you offer support after launch?', 'Yes. I offer ongoing maintenance and improvements so your product keeps running smoothly.'],
+  ];
+  const initials = (n) => n.split(/\s+/).filter(Boolean).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 %>
 <main id="main">
 
@@ -47,14 +66,33 @@
           <a class="btn btn-ghost magnetic" href="#contact">Get in touch</a>
         </div>
       </div>
-      <div class="hero-visual reveal" style="--d:200ms" aria-hidden="true">
-        <% heroCards.forEach((p, i) => { %>
-          <a class="hero-card hero-card-<%= i + 1 %>" href="/projects/<%= p.slug %>" tabindex="-1">
-            <img src="<%= p.cover_image %>" alt="" width="1200" height="800">
-            <span class="hero-card-label"><%= p.title %></span>
-          </a>
-        <% }) %>
-        <div class="floating-stat"><strong data-count="<%= projects.length %>">0</strong><span>projects shipped</span></div>
+      <div class="hero-visual reveal" style="--d:200ms" data-deck>
+        <span class="deck-glow" aria-hidden="true"></span>
+        <div class="deck" aria-hidden="true">
+          <% heroCards.forEach((p, i) => { %>
+            <a class="hero-card" href="/projects/<%= p.slug %>" tabindex="-1" data-pos="<%= i %>" draggable="false">
+              <img src="<%= p.cover_image %>" alt="" width="1200" height="800" draggable="false">
+              <span class="card-shine"></span>
+              <span class="hero-card-label"><%= p.title %><span class="label-arrow">→</span></span>
+            </a>
+          <% }) %>
+        </div>
+        <div class="tech-orbit" aria-hidden="true">
+          <span class="orbit-badge ob-1" data-depth="34"><img src="/images/tech/react.svg" alt="" width="28" height="28"></span>
+          <span class="orbit-badge ob-2" data-depth="22"><img src="/images/tech/figma.svg" alt="" width="28" height="28"></span>
+          <span class="orbit-badge ob-3" data-depth="44"><img src="/images/tech/nodejs.svg" alt="" width="28" height="28"></span>
+        </div>
+        <div class="floating-stat" aria-hidden="true"><strong data-count="<%= projects.length %>">0</strong><span>projects shipped</span></div>
+        <% if (heroCards.length > 1) { %>
+          <div class="deck-nav">
+            <span class="deck-count" data-deck-count aria-hidden="true">01 / <%= String(heroCards.length).padStart(2, '0') %></span>
+            <div class="deck-dots" role="group" aria-label="Featured projects">
+              <% heroCards.forEach((p, i) => { %>
+                <button type="button" class="deck-dot<%= i === 0 ? ' is-active' : '' %>" data-deck-dot aria-label="Show <%= p.title %>"<%- i === 0 ? ' aria-current="true"' : '' %>><span class="deck-dot-fill"></span></button>
+              <% }) %>
+            </div>
+          </div>
+        <% } %>
       </div>
     </div>
     <a class="scroll-cue" href="#about" aria-label="Scroll to About section"><span></span></a>
@@ -83,6 +121,34 @@
         <div class="stat-card reveal" style="--d:240ms"><strong><span data-count="<%= site.stat_satisfaction || 0 %>">0</span>%</strong><span>Client satisfaction</span></div>
       </div>
     </div>
+    <div class="container">
+      <div class="skills reveal" data-tabs>
+        <div class="skills-head">
+          <div>
+            <h3>Skills &amp; toolkit</h3>
+            <p class="muted small">The tools I reach for every day. Pick a category.</p>
+          </div>
+          <div class="tab-list" role="tablist" aria-label="Skill categories">
+            <span class="tab-indicator" aria-hidden="true"></span>
+            <% Object.keys(skills).forEach((k, i) => { %>
+              <button type="button" role="tab" id="tab-<%= k.toLowerCase() %>" aria-controls="panel-<%= k.toLowerCase() %>" aria-selected="<%= i === 0 %>" tabindex="<%= i === 0 ? 0 : -1 %>"><%= k %></button>
+            <% }) %>
+          </div>
+        </div>
+        <% Object.entries(skills).forEach(([k, list], i) => { %>
+          <div class="skill-panel" role="tabpanel" id="panel-<%= k.toLowerCase() %>" aria-labelledby="tab-<%= k.toLowerCase() %>" <%= i ? 'hidden' : '' %>>
+            <ul class="skill-bars">
+              <% list.forEach(([name, pct], j) => { %>
+                <li>
+                  <div class="skill-top"><span><%= name %></span><span><%= pct %>%</span></div>
+                  <div class="bar" role="progressbar" aria-label="<%= name %>" aria-valuenow="<%= pct %>" aria-valuemin="0" aria-valuemax="100"><span style="--p:<%= pct / 100 %>;--i:<%= j %>"></span></div>
+                </li>
+              <% }) %>
+            </ul>
+          </div>
+        <% }) %>
+      </div>
+    </div>
   </section>
 
   <!-- SERVICES -->
@@ -93,16 +159,19 @@
         <h2 class="section-title reveal">What I can do for you</h2>
         <p class="muted reveal">End-to-end product work, from strategy and design through to engineering and launch.</p>
       </div>
-      <div class="services-grid">
-        <% services.forEach((s, i) => { %>
-          <article class="service-card reveal" style="--d:<%= (i % 3) * 80 %>ms" data-spotlight>
-            <div class="service-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><%- s.icon %></svg></div>
-            <h3><%= s.title %></h3>
-            <p class="muted"><%= s.text %></p>
-          </article>
-        <% }) %>
+      <div class="services-carousel" data-carousel>
+        <div class="services-grid" data-carousel-track>
+          <% services.forEach((s, i) => { %>
+            <article class="service-card reveal" style="--d:<%= (i % 3) * 80 %>ms" data-spotlight>
+              <div class="service-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><%- s.icon %></svg></div>
+              <h3><%= s.title %></h3>
+              <p class="muted"><%= s.text %></p>
+            </article>
+          <% }) %>
+        </div>
+        <div class="carousel-dots" data-carousel-dots></div>
       </div>
-      <ol class="process">
+      <ol class="process" data-process>
         <% process.forEach(([t, d], i) => { %>
           <li class="reveal" style="--d:<%= i * 90 %>ms"><span class="process-num">0<%= i + 1 %></span><h3><%= t %></h3><p class="muted small"><%= d %></p></li>
         <% }) %>
@@ -119,42 +188,94 @@
         <p class="muted reveal">A few projects I'm proud of. Click any card to read the full story.</p>
       </div>
       <% if (projects.length) { %>
-        <div class="filters reveal" role="group" aria-label="Filter projects by category">
-          <button class="filter is-active" type="button" data-filter="all" aria-pressed="true">All <span><%= projects.length %></span></button>
-          <% categories.forEach(c => { %>
-            <button class="filter" type="button" data-filter="<%= c.slug %>" aria-pressed="false"><%= c.name %> <span><%= c.published_count || 0 %></span></button>
-          <% }) %>
+        <div class="portfolio-toolbar reveal">
+          <div class="filters" role="group" aria-label="Filter projects by category">
+            <button class="filter is-active" type="button" data-filter="all" aria-pressed="true">All <span><%= projects.length %></span></button>
+            <% categories.forEach(c => { %>
+              <button class="filter" type="button" data-filter="<%= c.slug %>" aria-pressed="false"><%= c.name %> <span><%= c.published_count || 0 %></span></button>
+            <% }) %>
+          </div>
+          <label class="search-box">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <input type="search" placeholder="Search projects…" aria-label="Search projects" data-project-search autocomplete="off">
+            <kbd aria-hidden="true">/</kbd>
+          </label>
         </div>
         <div class="projects-grid" data-projects>
           <% projects.forEach((p, i) => { %><%- include('partials/project-card', { p, i }) %><% }) %>
         </div>
         <div class="empty-state" data-filter-empty hidden><p>No projects in this category yet. New case studies are on their way!</p></div>
+        <div class="show-more" data-show-more hidden><button class="btn btn-ghost" type="button">Show more projects</button></div>
       <% } else { %>
         <div class="empty-state reveal"><p>New case studies are on their way. Check back soon!</p></div>
       <% } %>
     </div>
   </section>
 
+  <!-- TESTIMONIALS -->
+  <% if (tRows.length) { %>
+  <section class="section section-alt" id="testimonials">
+    <div class="container">
+      <div class="section-head">
+        <p class="section-label reveal">Testimonials</p>
+        <h2 class="section-title reveal">Kind words from clients</h2>
+        <p class="muted reveal">Hover over a card (or tap and hold) to pause the slider.</p>
+      </div>
+    </div>
+    <div class="t-marquee reveal" aria-label="Client testimonials">
+      <% tRows.forEach((row, r) => { %>
+        <div class="t-row<%= r % 2 ? ' is-reverse' : '' %>" style="--dur:<%= r % 2 ? 52 : 44 %>s">
+          <% [0, 1, 2].forEach((copy) => { %>
+            <div class="t-set"<%- copy ? ' aria-hidden="true"' : '' %>>
+              <% fillRow(row).forEach((t, k) => { %>
+                <figure class="testimonial-card"<%- (copy || k >= row.length) ? ' aria-hidden="true"' : '' %>>
+                  <div class="stars" role="img" aria-label="<%= t.rating %> out of 5 stars"><%= '★'.repeat(t.rating) %><span class="stars-off"><%= '★'.repeat(5 - t.rating) %></span></div>
+                  <blockquote><p><%= t.quote %></p></blockquote>
+                  <figcaption>
+                    <span class="avatar" aria-hidden="true"><% if (t.avatar) { %><img src="<%= t.avatar %>" alt="" width="46" height="46" loading="lazy"><% } else { %><%= initials(t.name) %><% } %></span>
+                    <span><strong><%= t.name %></strong><% if (t.role) { %><span class="muted small"><%= t.role %></span><% } %></span>
+                  </figcaption>
+                </figure>
+              <% }) %>
+            </div>
+          <% }) %>
+        </div>
+      <% }) %>
+    </div>
+  </section>
+  <% } %>
+
   <!-- CONTACT -->
-  <section class="section section-alt" id="contact">
+  <section class="section" id="contact">
     <div class="container contact-grid">
       <div>
         <p class="section-label reveal">Contact</p>
         <h2 class="section-title reveal">Have a project in mind? Let's build it together.</h2>
         <p class="muted reveal">Tell me a little about your idea, timeline and budget. I usually reply within one business day.</p>
         <ul class="contact-list">
-          <% if (site.contact_email) { %><li class="reveal"><span class="contact-icon">✉</span><div><span class="muted small">Email</span><a href="mailto:<%= site.contact_email %>"><%= site.contact_email %></a></div></li><% } %>
+          <% if (site.contact_email) { %><li class="reveal"><span class="contact-icon">✉</span><div><span class="muted small">Email</span><a href="mailto:<%= site.contact_email %>"><%= site.contact_email %></a></div><button class="copy-btn" type="button" data-copy="<%= site.contact_email %>" aria-label="Copy email address">Copy</button></li><% } %>
           <% if (site.contact_phone) { %><li class="reveal" style="--d:80ms"><span class="contact-icon">☏</span><div><span class="muted small">Phone</span><a href="tel:<%= site.contact_phone.replace(/[^\d+]/g, '') %>"><%= site.contact_phone %></a></div></li><% } %>
           <% if (site.location) { %><li class="reveal" style="--d:160ms"><span class="contact-icon">⌖</span><div><span class="muted small">Location</span><span><%= site.location %></span></div></li><% } %>
         </ul>
+        <div class="faq">
+          <h3 class="faq-title reveal">Frequently asked</h3>
+          <% faqs.forEach(([q, a], i) => { %>
+            <div class="faq-item reveal" style="--d:<%= i * 70 %>ms">
+              <h4 class="faq-q-wrap"><button class="faq-q" type="button" id="faq-q-<%= i %>" aria-expanded="false" aria-controls="faq-a-<%= i %>"><%= q %><span class="faq-icon" aria-hidden="true"></span></button></h4>
+              <div class="faq-body" id="faq-a-<%= i %>" role="region" aria-labelledby="faq-q-<%= i %>"><div><p><%= a %></p></div></div>
+            </div>
+          <% }) %>
+        </div>
       </div>
       <form class="contact-form reveal" action="/contact" method="post" data-contact-form novalidate>
         <div class="form-row">
-          <label class="field"><span>Name</span><input name="name" required maxlength="120" autocomplete="name" placeholder="Jane Doe"></label>
-          <label class="field"><span>Email</span><input name="email" type="email" required maxlength="200" autocomplete="email" placeholder="jane@company.com"></label>
+          <label class="field"><span>Name</span><input name="name" required maxlength="120" autocomplete="name" placeholder="Jane Doe"><small class="field-error">Please tell me your name.</small></label>
+          <label class="field"><span>Email</span><input name="email" type="email" required maxlength="200" autocomplete="email" placeholder="jane@company.com"><small class="field-error">Please enter a valid email address.</small></label>
         </div>
         <label class="field"><span>Subject</span><input name="subject" maxlength="200" placeholder="New website project"></label>
-        <label class="field"><span>Message</span><textarea name="message" rows="5" required minlength="10" maxlength="5000" placeholder="Tell me about your project…"></textarea></label>
+        <label class="field"><span>Message</span><textarea name="message" rows="5" required minlength="10" maxlength="5000" placeholder="Tell me about your project…"></textarea>
+          <span class="field-foot"><small class="field-error">Please write at least 10 characters.</small><small class="char-count" data-char-count>0 / 5000</small></span>
+        </label>
         <input type="hidden" name="form_ts" value="<%= Date.now() %>">
         <button class="btn btn-primary btn-block" type="submit"><span class="btn-label">Send message</span><span class="spinner" aria-hidden="true"></span></button>
         <p class="form-status <%= sent ? 'is-success' : '' %>" role="status" aria-live="polite"><%= sent ? "Thanks! Your message has been sent. I'll be in touch soon." : '' %></p>
@@ -162,4 +283,5 @@
     </div>
   </section>
 </main>
+<div class="toast" data-toast role="status" aria-live="polite"></div>
 <%- include('partials/footer') %>

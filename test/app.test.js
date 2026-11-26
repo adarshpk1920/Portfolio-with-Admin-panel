@@ -176,6 +176,70 @@ test('contact form stores messages and validates input', async () => {
   assert.doesNotMatch(inbox.text, /bot@spam.com/);
 });
 
+test('testimonials are managed from the admin panel and shown on the homepage', async () => {
+  await request(app).get('/admin/testimonials').expect(302);
+
+  // Seeded samples are listed in the admin and shown publicly.
+  assert.match((await agent.get('/admin/testimonials').expect(200)).text, /Priya Raman/);
+  assert.match((await request(app).get('/')).text, /id="testimonials"[\s\S]*Priya Raman/);
+
+  // Validation: name and quote are required.
+  let token = await freshCsrf('/admin/testimonials/new');
+  const bad = await agent.post('/admin/testimonials').field('_csrf', token).field('name', '').field('quote', 'short').expect(422);
+  assert.match(bad.text, /Client name is required/);
+
+  // Create with a photo, an out-of-range rating (clamped to 5) and HTML that must be escaped.
+  token = await freshCsrf('/admin/testimonials/new');
+  await agent
+    .post('/admin/testimonials')
+    .field('_csrf', token)
+    .field('name', 'Zara Test')
+    .field('role', 'CEO, Testco')
+    .field('quote', 'Brilliant work <script>alert(1)</script> from start to finish.')
+    .field('rating', '9')
+    .field('published', '1')
+    .attach('avatar', PNG, { filename: 'zara.png', contentType: 'image/png' })
+    .expect(302);
+  const created = app.locals.models.testimonials.all().find((t) => t.name === 'Zara Test');
+  assert.ok(created, 'testimonial saved');
+  assert.equal(created.rating, 5);
+  assert.match(created.avatar, /^\/uploads\/.+\.png$/);
+  let home = (await request(app).get('/')).text;
+  assert.match(home, /Zara Test/);
+  assert.match(home, /&lt;script&gt;alert\(1\)/, 'quote is HTML-escaped');
+  assert.doesNotMatch(home, /<script>alert\(1\)<\/script>/);
+  await request(app).get(created.avatar).expect(200);
+
+  // Hide it: gone from the homepage but still in the admin list.
+  token = await freshCsrf('/admin/testimonials');
+  await agent.post(`/admin/testimonials/${created.id}/toggle`).type('form').send({ _csrf: token }).expect(302);
+  assert.doesNotMatch((await request(app).get('/')).text, /Zara Test/);
+
+  // Edit: new role and rating, shown again.
+  token = await freshCsrf(`/admin/testimonials/${created.id}/edit`);
+  await agent.post(`/admin/testimonials/${created.id}`).field('_csrf', token).field('name', 'Zara Test').field('role', 'Founder, Newco')
+    .field('quote', 'Brilliant work from start to finish, again.').field('rating', '4').field('published', '1').expect(302);
+  home = (await request(app).get('/')).text;
+  assert.match(home, /Founder, Newco/);
+  assert.match(home, /aria-label="4 out of 5 stars"/);
+
+  // Reorder: move to the top.
+  const before = app.locals.models.testimonials.all().map((t) => t.id);
+  token = await freshCsrf('/admin/testimonials');
+  await agent.post(`/admin/testimonials/${created.id}/move`).type('form').send({ _csrf: token, direction: 'up' }).expect(302);
+  const after = app.locals.models.testimonials.all().map((t) => t.id);
+  assert.equal(after.indexOf(created.id), before.indexOf(created.id) - 1);
+
+  // Delete removes the record and its uploaded photo.
+  const photoFile = path.join(tmp, 'uploads', path.basename(created.avatar));
+  assert.ok(fs.existsSync(photoFile));
+  token = await freshCsrf('/admin/testimonials');
+  await agent.post(`/admin/testimonials/${created.id}/delete`).type('form').send({ _csrf: token }).expect(302);
+  assert.equal(app.locals.models.testimonials.find(created.id), undefined);
+  await new Promise((r) => setTimeout(r, 50));
+  assert.ok(!fs.existsSync(photoFile), 'photo file deleted');
+});
+
 test('logout ends the session', async () => {
   const token = await freshCsrf('/admin');
   await agent.post('/admin/logout').type('form').send({ _csrf: token }).expect(302);

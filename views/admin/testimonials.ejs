@@ -1,0 +1,61 @@
+<%- include('partials/top') %>
+<% const initials = (n) => n.split(/\s+/).filter(Boolean).map((w) => w[0]).join('').slice(0, 2).toUpperCase(); %>
+<% const visible = testimonials.filter((t) => t.published).length; %>
+<div class="toolbar">
+  <p class="muted small toolbar-note"><strong><%= visible %></strong> of <%= testimonials.length %> testimonial<%= testimonials.length === 1 ? '' : 's' %> visible on the homepage slider.</p>
+  <a class="btn btn-primary" href="/admin/testimonials/new">+ New testimonial</a>
+</div>
+
+<% if (testimonials.length) { %>
+  <div class="card table-card">
+    <table class="table">
+      <thead>
+        <tr><th>Client</th><th>Testimonial</th><th>Rating</th><th>Status</th><th class="right">Actions</th></tr>
+      </thead>
+      <tbody>
+        <% testimonials.forEach((t, i) => { %>
+          <tr>
+            <td data-label="Client">
+              <div class="project-cell">
+                <div class="thumb round"><% if (t.avatar) { %><img src="<%= t.avatar %>" alt=""><% } else { %><span><%= initials(t.name) %></span><% } %></div>
+                <div>
+                  <a class="strong" href="/admin/testimonials/<%= t.id %>/edit"><%= t.name %></a>
+                  <div class="muted small"><%= t.role || '—' %></div>
+                </div>
+              </div>
+            </td>
+            <td data-label="Testimonial" class="quote-cell"><span class="clamp-2">“<%= t.quote %>”</span></td>
+            <td data-label="Rating"><span class="stars-sm" aria-label="<%= t.rating %> out of 5 stars"><%= '★'.repeat(t.rating) %><span class="stars-off"><%= '★'.repeat(5 - t.rating) %></span></span></td>
+            <td data-label="Status">
+              <form method="post" action="/admin/testimonials/<%= t.id %>/toggle">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button class="status-toggle <%= t.published ? 'status-live' : 'status-draft' %>" type="submit" title="Click to <%= t.published ? 'hide' : 'show' %>">
+                  <span class="switch" aria-hidden="true"></span><%= t.published ? 'Visible' : 'Hidden' %>
+                </button>
+              </form>
+            </td>
+            <td class="right">
+              <div class="row-actions">
+                <form method="post" action="/admin/testimonials/<%= t.id %>/move"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="direction" value="up"><button class="icon-btn sm" type="submit" title="Move up" aria-label="Move up" <%= i === 0 ? 'disabled' : '' %>>↑</button></form>
+                <form method="post" action="/admin/testimonials/<%= t.id %>/move"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="direction" value="down"><button class="icon-btn sm" type="submit" title="Move down" aria-label="Move down" <%= i === testimonials.length - 1 ? 'disabled' : '' %>>↓</button></form>
+                <a class="btn btn-sm btn-ghost" href="/admin/testimonials/<%= t.id %>/edit">Edit</a>
+                <form method="post" action="/admin/testimonials/<%= t.id %>/delete" data-confirm="Delete the testimonial from &quot;<%= t.name %>&quot;? This cannot be undone.">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button class="btn btn-sm btn-danger-ghost" type="submit">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small hint">The order here is the order on the homepage slider. Hidden testimonials stay saved but are not shown. The slider is split into two rows once there are 4 or more visible testimonials.</p>
+<% } else { %>
+  <div class="card empty-card">
+    <h2>No testimonials yet</h2>
+    <p class="muted">Add what your clients say about you. Visible testimonials appear in the sliding section on the homepage. When there are none, that section is hidden.</p>
+    <a class="btn btn-primary" href="/admin/testimonials/new">+ New testimonial</a>
+  </div>
+<% } %>
+<%- include('partials/bottom') %>

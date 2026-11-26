@@ -73,6 +73,20 @@ function migrate(db) {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS testimonials (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT '',
+      quote TEXT NOT NULL,
+      rating INTEGER NOT NULL DEFAULT 5 CHECK (rating BETWEEN 1 AND 5),
+      avatar TEXT NOT NULL DEFAULT '',
+      published INTEGER NOT NULL DEFAULT 1,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_testimonials_published ON testimonials(published, sort_order);
+
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
@@ -97,6 +111,16 @@ function seed(db) {
       config.admin.name,
       bcrypt.hashSync(config.admin.password, 12)
     );
+  }
+
+  // Sample testimonials are added once (tracked by a flag), so deleting them all doesn't bring them back.
+  const seededTestimonials = db.prepare("SELECT value FROM settings WHERE key = 'seeded_testimonials'").get();
+  if (!seededTestimonials) {
+    db.transaction(() => {
+      const insertT = db.prepare('INSERT INTO testimonials (name, role, quote, rating, sort_order) VALUES (?, ?, ?, ?, ?)');
+      seedData.testimonials.forEach((t, i) => insertT.run(t.name, t.role, t.quote, t.rating || 5, i));
+      db.prepare("INSERT INTO settings (key, value) VALUES ('seeded_testimonials', '1')").run();
+    })();
   }
 
   const catCount = db.prepare('SELECT COUNT(*) AS n FROM categories').get().n;

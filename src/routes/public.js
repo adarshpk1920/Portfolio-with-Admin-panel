@@ -15,6 +15,7 @@ module.exports = function publicRoutes(models) {
       projects,
       // Every category is shown as a filter, even before it has published projects.
       categories: models.categories.all(),
+      testimonials: models.testimonials.published(),
       sent: req.query.sent === '1',
     });
   });

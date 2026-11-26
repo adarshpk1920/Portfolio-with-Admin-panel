@@ -9,9 +9,12 @@
         <a href="<%= site[key] %>" target="_blank" rel="noopener noreferrer"><%= label %></a>
       <% } }) %>
     </div>
-    <a class="back-top" href="#main" data-back-top aria-label="Back to top">↑</a>
   </div>
 </footer>
+<button class="to-top" type="button" data-to-top aria-label="Back to top">
+  <svg class="to-top-ring" viewBox="0 0 52 52" aria-hidden="true"><circle class="track" cx="26" cy="26" r="24"/><circle class="progress" cx="26" cy="26" r="24" pathLength="100"/></svg>
+  <svg class="to-top-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
 <script src="/js/main.js" defer></script>
 </body>
 </html>
