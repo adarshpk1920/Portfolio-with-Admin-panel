@@ -185,13 +185,22 @@
       card.addEventListener('pointerleave', () => (card.style.transform = ''));
     });
 
-    $$('[data-spotlight]').forEach((card) =>
-      card.addEventListener('pointermove', (e) => {
+    // Pointer position for card effects (service spotlight fill + gradient hover border).
+    // One delegated listener, at most one update per frame, only for the card under the pointer.
+    let glowRaf = 0;
+    let glowEvent = null;
+    document.addEventListener('pointermove', (e) => {
+      glowEvent = e;
+      if (glowRaf) return;
+      glowRaf = requestAnimationFrame(() => {
+        glowRaf = 0;
+        const card = glowEvent.target.closest?.('.glow-card, [data-spotlight]');
+        if (!card) return;
         const r = card.getBoundingClientRect();
-        card.style.setProperty('--mx', `${e.clientX - r.left}px`);
-        card.style.setProperty('--my', `${e.clientY - r.top}px`);
-      })
-    );
+        card.style.setProperty('--mx', `${(glowEvent.clientX - r.left).toFixed(1)}px`);
+        card.style.setProperty('--my', `${(glowEvent.clientY - r.top).toFixed(1)}px`);
+      });
+    }, { passive: true });
 
     // Hero motion: one requestAnimationFrame loop eases every value toward the pointer target
     // (critically damped), and only writes compositor-friendly transform/translate values.

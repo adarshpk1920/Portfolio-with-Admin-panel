@@ -521,7 +521,7 @@ html:not(.js) .bar span { transform: scaleX(var(--p)); }
 @keyframes t-slide { to { transform: translateX(calc(-100% / 3)); } }
 .testimonial-card { position: relative; margin: 0; padding: 2rem; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 1.1rem; transition: border-color .3s, transform .4s var(--ease); }
 .testimonial-card:hover { border-color: color-mix(in srgb, var(--accent) 45%, transparent); transform: translateY(-6px); box-shadow: var(--shadow); }
-.testimonial-card::after { content: '\201D'; position: absolute; top: .2rem; right: 1.4rem; font-family: Georgia, serif; font-size: 6rem; line-height: 1; background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; opacity: .35; pointer-events: none; }
+.testimonial-card::before { content: '\201D'; position: absolute; top: .2rem; right: 1.4rem; font-family: Georgia, serif; font-size: 6rem; line-height: 1; background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; opacity: .35; pointer-events: none; }
 .stars { color: #fbbf24; letter-spacing: 3px; font-size: 1rem; }
 .testimonial-card blockquote { margin: 0; flex: 1; }
 .testimonial-card blockquote p { margin: 0; font-size: 1.06rem; color: var(--muted-strong); }
@@ -600,7 +600,30 @@ html:not(.js) .bar span { transform: scaleX(var(--p)); }
   .to-top { right: 1rem; bottom: 1rem; width: 46px; height: 46px; }
 }
 
+/* ---------- Card hover border: a gradient edge that follows the pointer ----------
+   Drawn on ::after as a ring (the mask keeps only the border area), so it costs no layout and
+   sits above the card's content without blocking clicks. --mx/--my are set by main.js. */
+.glow-card { --glow-w: 2px; position: relative; }
+.glow-card::after {
+  content: ''; position: absolute; inset: 0; z-index: 5; border-radius: inherit; padding: var(--glow-w); pointer-events: none;
+  background:
+    radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), var(--accent-2), var(--accent) 30%, color-mix(in srgb, var(--accent) 35%, transparent) 55%, transparent 75%),
+    linear-gradient(var(--border), var(--border));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: 0; transition: opacity .35s var(--ease);
+}
+.glow-card:hover::after, .glow-card:focus-within::after { opacity: 1; }
+.glow-card:hover { border-color: transparent; box-shadow: 0 18px 50px -22px color-mix(in srgb, var(--accent) 55%, transparent); }
+/* Touch screens have no pointer to follow: show a soft full gradient border while pressed or focused. */
+@media (hover: none) {
+  .glow-card::after { background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+  .glow-card:active::after { opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .glow-card::after { transition: none; }
   .deck-dot.is-active .deck-dot-fill.is-running { animation: none !important; transform: scaleX(1); }
   .hero-card.is-leaving { animation: none !important; }
   .t-row { animation: none !important; }

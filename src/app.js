@@ -1,4 +1,6 @@
+const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const express = require('express');
 const session = require('express-session');
 const helmet = require('helmet');
@@ -10,6 +12,30 @@ const SqliteStore = require('./middleware/session-store');
 const { flash } = require('./middleware/security');
 const { removeUpload, publicPath } = require('./middleware/upload');
 const { formatDate } = require('./lib/util');
+
+const PUBLIC_DIR = path.join(config.ROOT, 'public');
+const assetVersions = new Map();
+/**
+ * Cache-busting URL for a static file: "/css/style.css" -> "/css/style.css?v=<content hash>".
+ * Browsers may cache static files for 7 days; because the URL changes whenever the file's
+ * content changes, visitors always get the CSS/JS that matches the HTML they were served.
+ * Hashes are cached in production and recomputed in development (files change while editing).
+ */
+function asset(urlPath) {
+  if (config.isProd && assetVersions.has(urlPath)) return assetVersions.get(urlPath);
+  let url = urlPath;
+  try {
+    const file = path.join(PUBLIC_DIR, urlPath);
+    if (file.startsWith(PUBLIC_DIR)) {
+      const hash = crypto.createHash('sha1').update(fs.readFileSync(file)).digest('hex').slice(0, 10);
+      url = `${urlPath}?v=${hash}`;
+    }
+  } catch (e) {
+    /* missing file: fall back to the plain URL */
+  }
+  assetVersions.set(urlPath, url);
+  return url;
+}
 
 function createApp({ dbFile } = {}) {
   const db = openDatabase(dbFile);
@@ -62,6 +88,7 @@ function createApp({ dbFile } = {}) {
     res.locals.site = models.settings.all();
     res.locals.currentPath = req.path;
     res.locals.formatDate = formatDate;
+    res.locals.asset = asset;
     res.locals.year = new Date().getFullYear();
     next();
   });

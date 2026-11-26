@@ -1,4 +1,4 @@
-<article class="project-card reveal" data-category="<%= p.category_slug || 'uncategorised' %>" data-tilt style="--d: <%= (i % 3) * 80 %>ms">
+<article class="project-card glow-card reveal" data-category="<%= p.category_slug || 'uncategorised' %>" data-tilt style="--d: <%= (i % 3) * 80 %>ms">
   <a href="/projects/<%= p.slug %>" class="project-link" aria-label="View case study: <%= p.title %>">
     <div class="project-media">
       <% if (p.cover_image) { %>

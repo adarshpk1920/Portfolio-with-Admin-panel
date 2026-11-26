@@ -115,10 +115,10 @@
         <a class="btn btn-ghost reveal" href="#contact">Work with me</a>
       </div>
       <div class="stats">
-        <div class="stat-card reveal"><strong><span data-count="<%= site.stat_years || 0 %>">0</span>+</strong><span>Years of experience</span></div>
-        <div class="stat-card reveal" style="--d:80ms"><strong><span data-count="<%= projects.length %>">0</span></strong><span>Published case studies</span></div>
-        <div class="stat-card reveal" style="--d:160ms"><strong><span data-count="<%= site.stat_clients || 0 %>">0</span>+</strong><span>Happy clients</span></div>
-        <div class="stat-card reveal" style="--d:240ms"><strong><span data-count="<%= site.stat_satisfaction || 0 %>">0</span>%</strong><span>Client satisfaction</span></div>
+        <div class="stat-card glow-card reveal"><strong><span data-count="<%= site.stat_years || 0 %>">0</span>+</strong><span>Years of experience</span></div>
+        <div class="stat-card glow-card reveal" style="--d:80ms"><strong><span data-count="<%= projects.length %>">0</span></strong><span>Published case studies</span></div>
+        <div class="stat-card glow-card reveal" style="--d:160ms"><strong><span data-count="<%= site.stat_clients || 0 %>">0</span>+</strong><span>Happy clients</span></div>
+        <div class="stat-card glow-card reveal" style="--d:240ms"><strong><span data-count="<%= site.stat_satisfaction || 0 %>">0</span>%</strong><span>Client satisfaction</span></div>
       </div>
     </div>
     <div class="container">
@@ -162,7 +162,7 @@
       <div class="services-carousel" data-carousel>
         <div class="services-grid" data-carousel-track>
           <% services.forEach((s, i) => { %>
-            <article class="service-card reveal" style="--d:<%= (i % 3) * 80 %>ms" data-spotlight>
+            <article class="service-card glow-card reveal" style="--d:<%= (i % 3) * 80 %>ms" data-spotlight>
               <div class="service-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><%- s.icon %></svg></div>
               <h3><%= s.title %></h3>
               <p class="muted"><%= s.text %></p>
@@ -228,7 +228,7 @@
           <% [0, 1, 2].forEach((copy) => { %>
             <div class="t-set"<%- copy ? ' aria-hidden="true"' : '' %>>
               <% fillRow(row).forEach((t, k) => { %>
-                <figure class="testimonial-card"<%- (copy || k >= row.length) ? ' aria-hidden="true"' : '' %>>
+                <figure class="testimonial-card glow-card"<%- (copy || k >= row.length) ? ' aria-hidden="true"' : '' %>>
                   <div class="stars" role="img" aria-label="<%= t.rating %> out of 5 stars"><%= '★'.repeat(t.rating) %><span class="stars-off"><%= '★'.repeat(5 - t.rating) %></span></div>
                   <blockquote><p><%= t.quote %></p></blockquote>
                   <figcaption>

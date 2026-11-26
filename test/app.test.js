@@ -40,6 +40,11 @@ test('public homepage renders seeded projects and sections', async () => {
   for (const id of ['about', 'services', 'portfolio', 'contact']) assert.match(res.text, new RegExp(`id="${id}"`));
   assert.match(res.text, /Lumen Analytics Dashboard/);
   assert.ok(res.headers['content-security-policy'], 'CSP header is set');
+  // CSS/JS URLs carry a content hash so long browser caching can never serve stale styles.
+  const css = res.text.match(/href="(\/css\/style\.css\?v=[0-9a-f]{10})"/);
+  assert.ok(css, 'stylesheet URL is versioned');
+  assert.match(res.text, /src="\/js\/main\.js\?v=[0-9a-f]{10}"/);
+  await request(app).get(css[1]).expect(200).expect('content-type', /css/);
 });
 
 test('project detail page renders markdown case study', async () => {
